@@ -6,7 +6,7 @@ set -euo pipefail
 SRC="$(cd "$(dirname "$0")" && pwd)"
 T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
 KIT="$T/kit"; mkdir "$KIT"
-(cd "$SRC" && tar --exclude=.git --exclude=.build -cf - .) | tar -C "$KIT" -xf -
+(cd "$SRC" && tar --exclude=.git --exclude=.build --exclude=snapshots -cf - .) | tar -C "$KIT" -xf -
 git -C "$KIT" init -q -b main
 export HOME="$T/home"; unset CLAUDE_CONFIG_DIR CODEX_HOME XDG_CONFIG_HOME PI_CODING_AGENT_DIR
 mkdir -p "$HOME/.claude/skills" "$HOME/.codex" "$HOME/.gemini" "$HOME/.pi/agent"

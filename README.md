@@ -1,21 +1,59 @@
 # machine-kit-skill
 
-Derek's machine profiles and global rules, shared across every machine and agent he uses. Cloned to `~/.agents/machine-kit-skill` on each machine and linked into the agents by `install.sh`. For AI agents working in this repo, see [AGENTS.md](AGENTS.md).
+Derek's machine profiles, global rules, and Proxmox infrastructure manifests, shared across every machine and agent he uses. Cloned to `~/.agents/machine-kit-skill` on each machine and linked into agent configs by `install.sh`. For AI agents working in this repo, see [AGENTS.md](AGENTS.md).
 
-> **This repository is public.** Never commit passwords, tokens, API keys, private keys, personal data, or public IP addresses. A pre-commit hook (enabled by `install.sh`) blocks obvious secrets and warns about emails and public IPs. What is here on purpose: private LAN IPs (`172.16.x.x`), LXC IDs and hostnames, Derek's public domains, his GitHub username, ssh key *file names*. Anything that must stay private goes in the private `proxmox-services` repo or on the machine itself.
+> **This repository is public.** Never commit passwords, tokens, API keys, private keys, personal data, or public IP addresses. A pre-commit hook (enabled by `install.sh`) blocks obvious secrets and warns about emails and public IPs. What is here on purpose: private LAN IPs (`172.16.x.x`), LXC IDs and hostnames, Derek's public domains, his GitHub username, ssh key *file names*. Anything that must stay private goes in the private `proxmox-services` or `oracle-proxmox` repos or on the machine itself.
 
-> **Companion repo.** All reusable engineering skills (Android/KMP, worktree-workflow, release-cicd, markdown-converter, docker-hosts, StageDroid device testing, and orchestration) live in [hereisderek/derek-agent-skills](https://github.com/hereisderek/derek-agent-skills). This repository (`machine-kit-skill`) strictly holds machine-specific profiles and global agent rules.
+> **Companion repo.** All reusable engineering skills (Android/KMP, worktree-workflow, release-cicd, markdown-converter, docker-hosts, StageDroid device testing, and orchestration) live in [hereisderek/derek-agent-skills](https://github.com/hereisderek/derek-agent-skills). This repository (`machine-kit-skill`) strictly holds machine-specific profiles, global agent rules, and infrastructure snapshot manifests.
 
 ## Layout
 
 ```
-rules/*.md               global rules, loaded every session, identical on every machine
-machines/<profile>.md    facts that differ per machine; installed as rules/99-machine.md
-install.sh               compiles rules and machine profiles into this machine's agents
-test.sh                  smoke test of install.sh and the hook (throwaway copy and $HOME)
-.githooks/pre-commit     the public-repo guard
-AGENTS.md                instructions for agents working in this repo (what each part is for)
+rules/*.md                  global rules, loaded every session, identical on every machine
+machines/<profile>.md       facts that differ per machine; installed as rules/99-machine.md
+snapshots/                  local fallback snapshots of Proxmox infrastructure manifests
+  home-proxmox/             mirrored from hereisderek/proxmox-services (docs/infra)
+  oracle-proxmox/           mirrored from hereisderek/oracle-proxmox (docs/lxc)
+scripts/update-snapshots.sh syncs local snapshots from GitHub or local repos
+install.sh                  compiles rules and links machine-kit-skill into agents
+test.sh                     smoke test of install.sh and the hook (throwaway copy and $HOME)
+.githooks/pre-commit        the public-repo guard
+AGENTS.md                   instructions for agents working in this repo
 ```
+
+## Proxmox Infrastructure Resolution (3-Tier Priority)
+
+When looking up hosts, LXC containers, ports, networks, or machine specs across Derek's two Proxmox clusters (Home PVE and Oracle PVE), load from top to bottom (Tier A -> Tier B -> Tier C):
+
+### 1. Home Proxmox (`home-proxmox`, `pve`)
+- **Tier A (GitHub Live, Private)**: `https://github.com/hereisderek/proxmox-services/tree/main/docs/infra/machines` and `docs/infra/SKILLS.md`.
+  - *Access*: Private repository. Requires GitHub login in browser or `gh` authentication in CLI (`gh api repos/hereisderek/proxmox-services/contents/docs/infra/SKILLS.md -H 'Accept: application/vnd.github.raw'`). On Derek's Mac, the local clone is at `/Volumes/private/workspace/my-lab/proxmox-services/docs/infra`.
+- **Tier B (Public HTTP Endpoint, No Auth)**: `https://sketch.hereisderek.dpdns.org/sites/node`. Direct reverse proxy on Caddy (LXC 2006).
+- **Tier C (Local Snapshot Fallback)**: Read `snapshots/home-proxmox/SKILLS.md` and `snapshots/home-proxmox/machines/` in `machine-kit-skill`. Use only when Tiers A and B fail.
+
+### 2. Oracle Proxmox (`oracle-proxmox`, Oracle A1)
+- **Tier A (GitHub Live, Private)**: `https://github.com/hereisderek/oracle-proxmox/tree/main/docs/lxc` (`SKILLS.md` and `docs/lxc/*.md`).
+  - *Access*: Private repository. Requires GitHub login in browser or `gh` authentication in CLI (`gh api repos/hereisderek/oracle-proxmox/contents/docs/lxc/SKILLS.md -H 'Accept: application/vnd.github.raw'`). On Derek's Mac, the local clone is at `/Volumes/private/workspace/my-lab/oracle-proxmox/docs/lxc`.
+- **Tier B (Public HTTP Endpoint, No Auth)**: `https://sites.derekoracle.cc.cd/node/SKILLS.md`. Direct reverse proxy on Caddy (LXC 102).
+- **Tier C (Local Snapshot Fallback)**: Read `snapshots/oracle-proxmox/SKILLS.md` and `snapshots/oracle-proxmox/*.md` in `machine-kit-skill`. Use only when Tiers A and B fail.
+
+---
+
+## Updating Local Snapshots
+
+To refresh local snapshots in `snapshots/` with the latest upstream configurations:
+
+```bash
+./scripts/update-snapshots.sh
+```
+
+The script:
+1. Verifies GitHub accessibility (`gh auth status`).
+2. Checks for local working copies in `/Volumes/private/workspace/my-lab/`.
+3. Falls back to public HTTP endpoints if unauthenticated.
+4. Updates `snapshots/home-proxmox/` and `snapshots/oracle-proxmox/`.
+
+---
 
 ## What differs per machine
 
@@ -36,54 +74,16 @@ Anything specific to one machine goes in `machines/<profile>.md`, never in a sha
 ## Install
 
 ```bash
-git clone https://github.com/hereisderek/agent-kit.git ~/.agents/agent-kit
-~/.agents/agent-kit/install.sh --dry-run     # shows every link and file it would change
-~/.agents/agent-kit/install.sh
+git clone git@github.com:hereisderek/machine-kit-skill.git ~/.agents/machine-kit-skill
+~/.agents/machine-kit-skill/install.sh --dry-run     # shows every link and file it would change
+~/.agents/machine-kit-skill/install.sh
 ```
 
 The profile is resolved as: `--profile`, else the one remembered from the last run (`~/.agents/.agent-kit-profile`), else `agent-lxc` on the agent LXC, else `generic`. It never guesses `mac`: on Derek's main Mac run `install.sh --profile mac` once, and it is remembered. `install.sh` is idempotent and never overwrites a real file or directory: it prints `SKIP` and leaves it for you to move away.
 
 What it does:
 
-1. Symlinks each `skills/<name>` into `~/.agents/skills/` and into every agent's `skills/` dir that exists.
+1. Links `machine-kit-skill` intact into `~/.agents/skills/machine-kit-skill` and into every agent's `skills/` dir that exists.
 2. Builds `.build/rules/` (symlinks to `rules/*.md` plus the machine file as `99-machine.md`), points `~/.agents/rules` at it, and `~/.claude/rules` at that. Claude Code reads it directly.
-3. Codex, Gemini/Antigravity, opencode, and Pi have no rules directory, so each gets one managed block between `BEGIN agent-kit` / `END agent-kit` markers in its global `AGENTS.md` / `GEMINI.md` (Pi: `$PI_CODING_AGENT_DIR/AGENTS.md`, default `~/.pi/agent`). Re-running replaces the block. Anything outside the markers (such as the ARTEMIS block) is untouched. Agents that are not installed are skipped. Re-run `install.sh` after editing a rule.
+3. Codex, Gemini/Antigravity, opencode, and Pi have no rules directory, so each gets one managed block between `BEGIN machine-kit-skill` / `END machine-kit-skill` markers in its global `AGENTS.md` / `GEMINI.md`. Re-running replaces the block. Anything outside the markers (such as the ARTEMIS block) is untouched. Agents that are not installed are skipped.
 4. Enables the pre-commit hook in this clone (`git config core.hooksPath .githooks`).
-
-### One-time migration on the Mac
-
-`~/.agents/rules` and `~/.agents/myskills` are real directories today. Move them aside, then install:
-
-```bash
-mv ~/.agents/rules ~/.agents/rules.pre-kit
-mv ~/.agents/myskills ~/.agents/myskills.pre-kit
-~/.agents/agent-kit/install.sh --profile mac
-```
-
-The old `release-cicd` links in `~/.claude/skills` point into `myskills` and get repointed. `~/.codex/AGENTS.md` and `~/.gemini/GEMINI.md` hold an old pasted copy of `rules.md` (`install.sh` warns about it): delete that copy so the rules are not loaded twice.
-
-## Changing things
-
-- **Edit a skill or rule here**, commit, push. Other machines: `git pull` and `./install.sh` (the agent LXC does this itself).
-- **New skill:** `skills/<name>/SKILL.md` with `name` and `description` frontmatter, then `./install.sh`.
-- **New rule:** one narrow topic per file in `rules/`. If it only holds on some machines, put it in those machines' notes instead.
-- **Machine-specific fact:** `machines/<profile>.md`.
-- Run `./test.sh` after changing `install.sh` or the hook.
-
-## Where the old rules went
-
-The old files in `~/.agents/rules/` were split like this.
-
-| Old | Now |
-|-----|-----|
-| `rules.md`, "AGENTS.md: Unified agent instructions" | `rules/agents-md.md` |
-| `rules.md`, "Planning & User Review Protocol" (first two bullets) | `rules/planning-and-review.md` |
-| `rules.md`, "Planning & User Review Protocol" (testing policy bullet) | `rules/testing-policy.md` |
-| `rules.md`, "General approval rule" | `rules/approvals.md`. Pushing now needs a yes unless Derek asked to commit and push. |
-| `rules.md`, "Skills and reusable rules" | `rules/skills-and-rules-loading.md` |
-| `rules.md`, "Instruction priority" | `rules/instruction-priority.md` |
-| `rules.md`, "Release cycle and CI/CD" | dropped: the `release-cicd` skill already covers all of it. The "no release tags without approval" guard is kept in `rules/approvals.md`. |
-| `safe-command-rule.md` | `rules/safe-commands.md` |
-| `text-format.md` | `rules/deliverables-raw-syntax.md` |
-| `manner.md` | `rules/no-mannered-prose.md` |
-| `worktrunk.md` | `rules/worktrunk.md`, reworked, plus the `worktree-workflow` skill. The old `worktree.md` it pointed at is not part of the kit (it was already in the Trash); worktrees are done with Worktrunk only. Worktrunk ships no rule file of its own, only the `worktrunk` skill, which the rule defers to for CLI detail. |

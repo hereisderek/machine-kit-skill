@@ -18,11 +18,15 @@ Already here on purpose (public or low risk): private LAN addresses (`172.16.x.x
 |------|---------|------------|
 | `rules/*.md` | Global rules, loaded into every agent session on every machine. Keep each file to one narrow topic and keep them short: they cost context in every session. | all machines |
 | `machines/<profile>.md` | Facts that differ per machine; installed as `rules/99-machine.md`. Anything specific to one machine goes here and nowhere else. | one profile each |
+| `snapshots/` | Local fallback snapshots for Home and Oracle Proxmox machine manifests (`SKILLS.md` and machine sheets). | all machines |
+| `scripts/update-snapshots.sh` | Updates local snapshots from GitHub or local working copies. | all machines |
 | `install.sh` | Compiles and links rules into this machine's agents; remembers the profile. Idempotent; never overwrites a real file. | per machine |
 | `test.sh` | Sandboxed smoke test of `install.sh` and the hook. Run after changing either. | dev |
 | `.githooks/pre-commit` | The public-repo guard above. | dev |
 
-> **Reusable Skills:** Reusable engineering skills (Android/KMP, worktree-workflow, release-cicd, markdown-converter, docker-hosts, state-droid-remote-device, etc.) live in [hereisderek/derek-agent-skills](https://github.com/hereisderek/derek-agent-skills). This repository exclusively manages machine-specific facts and global rules.
+> **Proxmox Infrastructure Tiers:** Agents looking up cluster machines/ports must follow the 3 tiers (A: GitHub live private repo via `gh`/login -> B: Public HTTP endpoint -> C: Local snapshot in `snapshots/`). See `rules/proxmox-infrastructure.md`.
+
+> **Reusable Skills:** Reusable engineering skills (Android/KMP, worktree-workflow, release-cicd, markdown-converter, docker-hosts, state-droid-remote-device, etc.) live in [hereisderek/derek-agent-skills](https://github.com/hereisderek/derek-agent-skills). This repository exclusively manages machine-specific facts, global rules, and Proxmox infrastructure manifests.
 
 ## Rules for changing it
 
