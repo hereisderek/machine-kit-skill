@@ -1,6 +1,6 @@
 # Loading skills and rules
 
-Reusable skills and rule packs live in `~/.agents`: skills in `~/.agents/skills/<name>/SKILL.md`, rules in `~/.agents/rules/`. Third-party skills come from the `skills` CLI. Derek's own engineering skills live in `derek-agent-skills` (`~/.agents/skills/derek-skills`), and these global rules and machine profiles come from the `machine-kit-skill` repo (`~/.agents/machine-kit-skill`), linked in by its `install.sh`. To change one of them, edit it in that repo.
+Reusable skills and rule packs live in `~/.agents`: skills in `~/.agents/skills/<name>/SKILL.md`, rules in `~/.agents/rules/`. Third-party skills come from the `skills` CLI. Derek's own engineering skills live in `derek-agent-skills` (`~/.agents/skills/derek-agent-skills`, with `derek-skills` alias), and these global rules and machine profiles come from the `machine-kit-skill` repo (`~/.agents/machine-kit-skill`), linked in by its `install.sh`. To change one of them, edit it in that repo.
 
 Facts that differ per machine (paths, package manager, docker availability, how tools are installed) are in the machine notes, `~/.agents/rules/99-machine.md`. When a rule says "see the machine notes", read that file.
 
