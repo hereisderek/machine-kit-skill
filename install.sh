@@ -49,20 +49,23 @@ link() {
   say "link $path -> $target"
 }
 
-# 1. Skills: the universal store ~/.agents/skills, then each agent's own skills dir (if it exists).
-say "== skills"
-run mkdir -p "$AGENTS/skills"
-SKILL_DIRS=("$CLAUDE_DIR/skills" "${CODEX_HOME:-$HOME/.codex}/skills" "$HOME/.gemini/skills" "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills")
-for d in "$KIT"/skills/*/; do
-  s="$(basename "$d")"
-  link "$KIT/skills/$s" "$AGENTS/skills/$s"
-  for a in "${SKILL_DIRS[@]}"; do
-    [ -d "$a" ] || continue
-    # On the agent LXC these dirs ARE the universal store (symlinks to it): linking into them would loop.
-    if [ "$(physical "$a")" = "$(physical "$AGENTS/skills")" ]; then continue; fi
-    link "$AGENTS/skills/$s" "$a/$s"
+# 1. Skills: if any machine-specific skills exist in skills/, link them. Reusable skills live in derek-agent-skills.
+if [ -d "$KIT/skills" ]; then
+  say "== skills"
+  run mkdir -p "$AGENTS/skills"
+  SKILL_DIRS=("$CLAUDE_DIR/skills" "${CODEX_HOME:-$HOME/.codex}/skills" "$HOME/.gemini/skills" "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills")
+  shopt -s nullglob
+  for d in "$KIT"/skills/*/; do
+    s="$(basename "$d")"
+    link "$KIT/skills/$s" "$AGENTS/skills/$s"
+    for a in "${SKILL_DIRS[@]}"; do
+      [ -d "$a" ] || continue
+      if [ "$(physical "$a")" = "$(physical "$AGENTS/skills")" ]; then continue; fi
+      link "$AGENTS/skills/$s" "$a/$s"
+    done
   done
-done
+  shopt -u nullglob
+fi
 
 # 2. Rules: a directory of symlinks (all of rules/ plus this machine's notes as 99-machine.md).
 #    Claude Code reads it directly through ~/.claude/rules.
@@ -89,11 +92,11 @@ from pathlib import Path
 
 kit, profile, dry = Path(os.environ["KIT"]), os.environ["PROFILE"], os.environ["DRY"] == "1"
 files = sorted((kit / "rules").glob("*.md")) + [kit / "machines" / f"{profile}.md"]
-body = "\n\n".join(f"<!-- agent-kit: {p.parent.name}/{p.name} -->\n{p.read_text().strip()}" for p in files)
-BEGIN = "<!-- BEGIN agent-kit (managed by install.sh; edits are overwritten) -->"  # never reword: it is the match key
-END = "<!-- END agent-kit -->"
+body = "\n\n".join(f"<!-- machine-kit-skill: {p.parent.name}/{p.name} -->\n{p.read_text().strip()}" for p in files)
+BEGIN = "<!-- BEGIN machine-kit-skill (managed by install.sh; edits are overwritten) -->"
+END = "<!-- END machine-kit-skill -->"
 block = f"{BEGIN}\n{body}\n{END}\n"
-pattern = re.compile(re.escape(BEGIN) + r".*?" + re.escape(END) + r"\n?", re.S)
+pattern = re.compile(r"<!-- BEGIN (?:agent-kit|machine-kit-skill)[^\n]*-->.*?<!-- END (?:agent-kit|machine-kit-skill) -->\n?", re.S)
 
 for target in map(Path, sys.argv[1:]):
     if not target.parent.is_dir():
@@ -102,7 +105,8 @@ for target in map(Path, sys.argv[1:]):
     text = target.read_text() if target.exists() else ""
     if "# Global Agent Rules" in pattern.sub("", text):
         print(f"WARN {target} still has an old pasted copy of the rules; delete it to avoid duplicates")
-    new = pattern.sub(lambda m: block, text) if BEGIN in text else (text.rstrip("\n") + "\n\n" if text else "") + block
+    has_block = bool(pattern.search(text))
+    new = pattern.sub(lambda m: block, text) if has_block else (text.rstrip("\n") + "\n\n" if text else "") + block
     if new == text:
         print(f"ok   {target}")
         continue

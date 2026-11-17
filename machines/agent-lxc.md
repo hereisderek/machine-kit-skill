@@ -2,7 +2,7 @@
 
 Applies only on the agent LXC (profile `agent-lxc`): Proxmox LXC 2026, hostname `agent`, `172.16.2.26`, Debian 13, user `derek` (uid/gid 1000), bash, headless. Where a shared rule or skill says "see the machine notes", these facts win.
 
-- **Layout:** agents and their config live on the `/opt` mount. `~/.agents` is a symlink to `/opt/config/.agents`, so the kit is at `/opt/config/.agents/agent-kit`. Claude Code runs with `CLAUDE_CONFIG_DIR=/opt/config/claude` and Codex with `CODEX_HOME=/opt/config/codex` (`~/.claude` and `~/.codex` are symlinks to them).
+- **Layout:** agents and their config live on the `/opt` mount. `~/.agents` is a symlink to `/opt/config/.agents`, so the kit is at `/opt/config/.agents/machine-kit-skill` (with compatibility symlink from `agent-kit`). Claude Code runs with `CLAUDE_CONFIG_DIR=/opt/config/claude` and Codex with `CODEX_HOME=/opt/config/codex` (`~/.claude` and `~/.codex` are symlinks to them).
 - **Install and update of the kit:** `/opt/scripts/startup.d/agent-kit-startup.sh` clones the repo and runs `install.sh --profile agent-lxc` on every container start. `/opt/updater.sh update` also pulls. Documentation: `services/2026-agent/README.md` in the proxmox-services repo.
 - **Workspace path:** `/workspace` (same dataset as on LXCs 2028, 2029, 2011). The Mac's `/Volumes/private/workspace/...` paths do not exist here.
 - **No docker, no podman, no uv, no pip.** For anything that needs Docker or Podman, use the `docker-hosts` skill (LXC 2028 / 2029). Published ports are on the docker LXC's IP, and `portbridge` (running on those LXCs) makes their loopback-only ports reachable there; the reachable address is in `/workspace/.portbridge/<host>.json`, readable from here without ssh.

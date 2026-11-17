@@ -1,33 +1,21 @@
-# agent-kit
+# machine-kit-skill
 
-Derek's own agent skills and global rules, shared by every machine and agent he uses. One repo, cloned to `~/.agents/agent-kit` on each machine, linked into the agents by `install.sh`. For AI agents working in this repo, see [AGENTS.md](AGENTS.md).
+Derek's machine profiles and global rules, shared across every machine and agent he uses. Cloned to `~/.agents/machine-kit-skill` on each machine and linked into the agents by `install.sh`. For AI agents working in this repo, see [AGENTS.md](AGENTS.md).
 
 > **This repository is public.** Never commit passwords, tokens, API keys, private keys, personal data, or public IP addresses. A pre-commit hook (enabled by `install.sh`) blocks obvious secrets and warns about emails and public IPs. What is here on purpose: private LAN IPs (`172.16.x.x`), LXC IDs and hostnames, Derek's public domains, his GitHub username, ssh key *file names*. Anything that must stay private goes in the private `proxmox-services` repo or on the machine itself.
 
-Third-party skills (the `skills` CLI: taste-skill, android/skills, the official worktrunk skill, ...) are not in here. They are installed separately: `~/.agents/bootstrap.sh` on the Mac, `/opt/scripts/startup.d/skills-startup.sh` on the agent LXC.
-
-> **Companion repo.** The Android/KMP, multi-agent orchestration and gesture-animation skills live in [hereisderek/derek-agent-skills](https://github.com/hereisderek/derek-agent-skills) (installed with `npx skills add hereisderek/derek-agent-skills -g --full-depth -y`). This repo (agent-kit) holds the global rules, the per-machine notes and the skills that every machine uses: `markdown-converter`, `release-cicd`, `worktree-workflow`, `docker-hosts` and the device skills. Each skill lives in exactly one of the two repos.
+> **Companion repo.** All reusable engineering skills (Android/KMP, worktree-workflow, release-cicd, markdown-converter, docker-hosts, StageDroid device testing, and orchestration) live in [hereisderek/derek-agent-skills](https://github.com/hereisderek/derek-agent-skills). This repository (`machine-kit-skill`) strictly holds machine-specific profiles and global agent rules.
 
 ## Layout
 
 ```
-skills/<name>/SKILL.md   Derek's own skills (loaded on demand)
 rules/*.md               global rules, loaded every session, identical on every machine
 machines/<profile>.md    facts that differ per machine; installed as rules/99-machine.md
-install.sh               links skills and rules into this machine's agents
+install.sh               compiles rules and machine profiles into this machine's agents
 test.sh                  smoke test of install.sh and the hook (throwaway copy and $HOME)
 .githooks/pre-commit     the public-repo guard
 AGENTS.md                instructions for agents working in this repo (what each part is for)
 ```
-
-| Skill | What it is |
-|-------|------------|
-| `markdown-converter` | Convert documents to Markdown with Microsoft's `markitdown`. Asks before installing it. Derived from an existing community skill, see its `SOURCE.md`. |
-| `release-cicd` | Default tag format and release CI/CD policy for package releases only. Any runtime instruction overrides it. |
-| `docker-hosts` | Use the Docker and Podman LXCs (2028 / 2029) on machines without docker, or when asked: ports, data layout, exposing a service through Caddy under `/sites/<app>`. |
-| `worktree-workflow` | Standard feature workflow with Worktrunk: start in a new worktree, work, finish by PR or `wt merge`, when merging is allowed, what is automated. |
-| `state-droid-remote-device` | Discover, lease, and control physical/wireless Android test devices or AVDs via StageDroid Central Smart ADB Proxy (port 50370). |
-| `personal-orchestration-preset` | Derek's personal multi-agent orchestration preset: Gradle locks, device pool leasing hooks, and host memory discipline. |
 
 ## What differs per machine
 

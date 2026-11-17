@@ -1,4 +1,4 @@
-# AGENTS.md (agent-kit)
+# AGENTS.md (machine-kit-skill)
 
 Instructions for AI agents working **in this repository**. What the repo is for and how to install it: [README.md](README.md).
 
@@ -17,20 +17,18 @@ Already here on purpose (public or low risk): private LAN addresses (`172.16.x.x
 | Path | Purpose | Applies to |
 |------|---------|------------|
 | `rules/*.md` | Global rules, loaded into every agent session on every machine. Keep each file to one narrow topic and keep them short: they cost context in every session. | all machines |
-| `skills/<name>/SKILL.md` | On-demand playbooks (loaded only when the task matches the description). Put detail here, not in a rule. | all machines |
 | `machines/<profile>.md` | Facts that differ per machine; installed as `rules/99-machine.md`. Anything specific to one machine goes here and nowhere else. | one profile each |
-| `install.sh` | Links skills and rules into this machine's agents; remembers the profile. Idempotent; never overwrites a real file. | per machine |
+| `install.sh` | Compiles and links rules into this machine's agents; remembers the profile. Idempotent; never overwrites a real file. | per machine |
 | `test.sh` | Sandboxed smoke test of `install.sh` and the hook. Run after changing either. | dev |
 | `.githooks/pre-commit` | The public-repo guard above. | dev |
 
-Skills: `markdown-converter` (markitdown, asks before installing), `release-cicd` (default release policy for package releases only), `docker-hosts` (use the Docker/Podman LXCs 2028/2029), `worktree-workflow` (feature work with Worktrunk), `state-droid-remote-device` (hardware device pool & StageDroid), `personal-orchestration-preset` (mobile Gradle locks & hooks).
+> **Reusable Skills:** Reusable engineering skills (Android/KMP, worktree-workflow, release-cicd, markdown-converter, docker-hosts, state-droid-remote-device, etc.) live in [hereisderek/derek-agent-skills](https://github.com/hereisderek/derek-agent-skills). This repository exclusively manages machine-specific facts and global rules.
 
 ## Rules for changing it
 
-- **Machine-specific facts go in `machines/<profile>.md`.** A shared rule or skill must not name one machine's paths, package manager, or install commands; it says "see the machine notes".
+- **Machine-specific facts go in `machines/<profile>.md`.** A shared rule must not name one machine's paths, package manager, or install commands; it says "see the machine notes".
 - Profiles: `mac` (Derek's main Mac), `agent-lxc` (LXC 2026), `generic` (anything else; discovers its facts at runtime).
-- A rule applies everywhere; if it only holds on some machines, it is a machine note or a skill instead.
-- `skills/markdown-converter` is derived from an upstream skill; read its `SOURCE.md` before editing. `skills/release-cicd` is a default that user instructions override; keep that statement.
+- A rule applies everywhere; if it only holds on some machines, it is a machine note instead.
 - `rules/approvals.md` and `rules/worktrunk.md` must agree on pushing: a push needs the user's yes, and "commit and push" is that yes for that push.
 - After changing `install.sh` or the hook: `./test.sh`. After changing a rule on a machine that uses the `AGENTS.md` blocks (Codex, Gemini, opencode, Pi): re-run `./install.sh`.
 - Write plainly (see `rules/no-mannered-prose.md`).
