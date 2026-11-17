@@ -18,6 +18,7 @@ check() { eval "$1" || { echo "FAIL: $1"; cat "$T/out" 2>/dev/null; exit 1; }; }
 echo "== install.sh"
 "$KIT/install.sh" --profile mac > "$T/out" 2>&1 || { cat "$T/out"; exit 1; }
 "$KIT/install.sh" > "$T/out2" 2>&1 # no flag: the profile is remembered
+check '[ -L "$HOME/.agents/skills/machine-kit-skill" ]'
 check '[ -f "$HOME/.claude/rules/99-machine.md" ] && grep -q "Machine notes: mac" "$HOME/.claude/rules/99-machine.md"'
 check 'grep -q "^profile: mac" "$T/out2"'
 check '[ "$(grep -c "BEGIN machine-kit-skill" "$HOME/.codex/AGENTS.md")" = 1 ]'

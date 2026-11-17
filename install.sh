@@ -49,23 +49,16 @@ link() {
   say "link $path -> $target"
 }
 
-# 1. Skills: if any machine-specific skills exist in skills/, link them. Reusable skills live in derek-agent-skills.
-if [ -d "$KIT/skills" ]; then
-  say "== skills"
-  run mkdir -p "$AGENTS/skills"
-  SKILL_DIRS=("$CLAUDE_DIR/skills" "${CODEX_HOME:-$HOME/.codex}/skills" "$HOME/.gemini/skills" "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills")
-  shopt -s nullglob
-  for d in "$KIT"/skills/*/; do
-    s="$(basename "$d")"
-    link "$KIT/skills/$s" "$AGENTS/skills/$s"
-    for a in "${SKILL_DIRS[@]}"; do
-      [ -d "$a" ] || continue
-      if [ "$(physical "$a")" = "$(physical "$AGENTS/skills")" ]; then continue; fi
-      link "$AGENTS/skills/$s" "$a/$s"
-    done
-  done
-  shopt -u nullglob
-fi
+# 1. Skills: link machine-kit-skill intact into ~/.agents/skills and agent directories.
+say "== skills"
+run mkdir -p "$AGENTS/skills"
+link "$KIT" "$AGENTS/skills/machine-kit-skill"
+SKILL_DIRS=("$CLAUDE_DIR/skills" "${CODEX_HOME:-$HOME/.codex}/skills" "$HOME/.gemini/skills" "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills")
+for a in "${SKILL_DIRS[@]}"; do
+  [ -d "$a" ] || continue
+  if [ "$(physical "$a")" = "$(physical "$AGENTS/skills")" ]; then continue; fi
+  link "$AGENTS/skills/machine-kit-skill" "$a/machine-kit-skill"
+done
 
 # 2. Rules: a directory of symlinks (all of rules/ plus this machine's notes as 99-machine.md).
 #    Claude Code reads it directly through ~/.claude/rules.
