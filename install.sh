@@ -53,7 +53,7 @@ link() {
 say "== skills"
 run mkdir -p "$AGENTS/skills"
 link "$KIT" "$AGENTS/skills/machine-kit-skill"
-SKILL_DIRS=("$CLAUDE_DIR/skills" "${CODEX_HOME:-$HOME/.codex}/skills" "$HOME/.gemini/skills" "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills")
+SKILL_DIRS=("$CLAUDE_DIR/skills" "${CODEX_HOME:-$HOME/.codex}/skills" "$HOME/.gemini/skills" "$HOME/.gemini/config/skills" "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills")
 for a in "${SKILL_DIRS[@]}"; do
   [ -d "$a" ] || continue
   if [ "$(physical "$a")" = "$(physical "$AGENTS/skills")" ]; then continue; fi
