@@ -18,3 +18,8 @@ All hosts use key-based SSH (`~/.ssh/key.ed25519`) and are configured in `~/.ssh
 - **Remote / Outside LAN:** `<name>.lab.proxy` (ProxyJump via Oracle node `pve.oracle.proxy`, e.g., `ssh derek@saltbox.lab.proxy`).
 - **Oracle Internal:** `<name>.oracle` (resolved by dnsmasq `10.10.10.1`) or `<name>.oracle.ip` (e.g., `ssh derek@agent.oracle`).
 - **Oracle Public Direct:** `<name>.oracle.proxy` (`137.23.1.118`, e.g., `ssh derek@pve.oracle.proxy`).
+
+## 4. Tailnet (Tailscale and Headscale)
+- Three subnet-router and exit-node members on the official Tailscale tailnet: `pve-lab` (home LXC 2032, `172.16.0.0/16`), `pve-oracle` (Oracle LXC 120, `10.10.10.0/24` and `fd00:10:10::/64`) and `china-fnos` (the China fnOS NAS, `192.168.1.0/24`, userspace mode, never reboot it). Split DNS in the Tailscale admin console: `lab` to `172.16.2.5`, `oracle` to `10.10.10.1` (domains without a leading dot).
+- Headscale (Oracle LXC 119) at `https://hs.derekoracle.cc.cd`, user `derek`. Only the phone is on it so far. The `hs` Cloudflare record must stay DNS-only (unproxied CNAME to `ip.derekoracle.cc.cd`).
+- For details and open items read `network.md` (Tier A: `docs/infra/network.md`) and the sheets `2032-tailscale`, `feiniu-fnos` (home) and `119-headscale`, `120-tailscale` (Oracle).
