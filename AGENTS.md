@@ -19,6 +19,8 @@ Already here on purpose (public or low risk): private LAN addresses (`172.16.x.x
 | `rules/*.md` | Global rules, loaded into every agent session on every machine. Keep each file to one narrow topic and keep them short: they cost context in every session. | all machines |
 | `machines/<profile>.md` | Facts that differ per machine; installed as `rules/99-machine.md`. Anything specific to one machine goes here and nowhere else. | one profile each |
 | `snapshots/` | Local fallback snapshots for Home and Oracle Proxmox machine manifests (`SKILLS.md` and machine sheets). | all machines |
+| `repos/` | Gitignored symlinks to local clones of the two PVE repos, made by `scripts/link-pve-repos.sh`. Never commit it; never edit the repos through it for kit changes. | this machine |
+| `scripts/link-pve-repos.sh` | Finds the local clones and creates the `repos/` symlinks. Symlinks only; never clones or pulls. | all machines |
 | `scripts/update-snapshots.sh` | Updates local snapshots from GitHub or local working copies. | all machines |
 | `install.sh` | Compiles and links rules into this machine's agents; remembers the profile. Idempotent; never overwrites a real file. | per machine |
 | `test.sh` | Sandboxed smoke test of `install.sh` and the hook. Run after changing either. | dev |

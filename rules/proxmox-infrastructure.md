@@ -12,6 +12,12 @@ When looking up hosts, LXC containers, ports, networks, or machine specs across 
 - **Tier B (Public HTTP Endpoint, No Auth)**: `curl -fsSL https://sites.derekoracle.cc.cd/node/SKILLS.md`. Live snapshot served by Oracle Caddy (LXC 102).
 - **Tier C (Local Snapshot Fallback)**: Read `snapshots/oracle-proxmox/SKILLS.md` and `snapshots/oracle-proxmox/*.md` in `machine-kit-skill`. Use only when Tiers A and B fail.
 
+## Making changes on a PVE server
+- The two repos are the source of truth for their server: Home PVE `hereisderek/proxmox-services`, Oracle PVE `hereisderek/oracle-proxmox`. Both are private.
+- Local clones are symlinked in the kit's gitignored `repos/` (`repos/home-proxmox`, `repos/oracle-proxmox`) by `scripts/link-pve-repos.sh` (run by `install.sh`). The kit lives at `~/.agents/skills/machine-kit-skill`.
+- Before changing anything on a server, read that repo's `AGENTS.md` and follow it: its plan-first and approval rules, its backup rules, and its documentation rules (sheets, change log, update history, `SKILLS.md`, issues). A change is not done until it is documented the way that repo says. Do not copy those rules here; they change.
+- If `repos/<name>` is missing, run the script. If there is still no clone, ask Derek before touching the server.
+
 ## 3. SSH Connection Conventions
 All hosts use key-based SSH (`~/.ssh/key.ed25519`) and are configured in `~/.ssh/config` using a 3-name convention:
 - **Home LAN:** `<name>.lab` (resolved by DNS LXC 1005 `172.16.2.5`) or direct LAN IP `<name>.lab.ip` (e.g., `ssh derek@saltbox.lab`, `ssh root@pve.lab`).

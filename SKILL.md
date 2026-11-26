@@ -20,6 +20,14 @@ Derek's machine profiles, global rules, and Proxmox infrastructure manifests, sh
 
 ---
 
+## PVE repos (for changes, not just lookups)
+
+- Home PVE: [hereisderek/proxmox-services](https://github.com/hereisderek/proxmox-services). Oracle PVE: [hereisderek/oracle-proxmox](https://github.com/hereisderek/oracle-proxmox).
+- `scripts/link-pve-repos.sh` finds local clones and symlinks them to `repos/home-proxmox` and `repos/oracle-proxmox` (gitignored; `install.sh` runs it). Override a path with `HOME_PVE_REPO` / `ORACLE_PVE_REPO`.
+- Any change on a server follows that repo's `AGENTS.md`, including its documentation rules. Open `repos/<name>/AGENTS.md` first.
+
+---
+
 ## Proxmox Infrastructure Resolution (3-Tier Priority)
 
 When an agent needs information on hosts, containers, networks, or ports across Derek's clusters, load from top to bottom:

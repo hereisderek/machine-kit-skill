@@ -49,6 +49,10 @@ link() {
   say "link $path -> $target"
 }
 
+# PVE repo symlinks (repos/, gitignored). A missing clone is not an install failure.
+say "== pve repos"
+run "$KIT/scripts/link-pve-repos.sh" || true
+
 # 1. Skills: link machine-kit-skill intact into ~/.agents/skills and agent directories.
 say "== skills"
 run mkdir -p "$AGENTS/skills"
